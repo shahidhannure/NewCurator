@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import bcrypt
 import requests 
+from bs4 import BeautifulSoup
 
 # Initialize the SQLite database for user data
 conn_users = sqlite3.connect('user_data.db')
