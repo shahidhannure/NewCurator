@@ -1,6 +1,5 @@
 import streamlit as st
 import sqlite3
-from streamlit import SessionState
 
 # Initialize the SQLite database for comments
 conn_comments = sqlite3.connect('comments.db')
@@ -10,11 +9,12 @@ c_comments = conn_comments.cursor()
 conn_users = sqlite3.connect('user_data.db')
 c_users = conn_users.cursor()
 
-# Initialize session state for user authentication
-session_state = SessionState.get(user_authenticated=False)
-
 # Streamlit app title and layout
 st.title("Trending News Summarizer & Fake News Detector")
+
+# Initialize session state for user authentication
+if 'user_authenticated' not in st.session_state:
+    st.session_state.user_authenticated = False
 
 # Function to fetch and summarize trending news
 def fetch_and_summarize_news():
