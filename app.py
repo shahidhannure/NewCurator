@@ -1,9 +1,6 @@
 import streamlit as st
 import sqlite3
-
-# Initialize the SQLite database for comments
-conn_comments = sqlite3.connect('comments.db')
-c_comments = conn_comments.cursor()
+import bcrypt
 
 # Initialize the SQLite database for user data
 conn_users = sqlite3.connect('user_data.db')
@@ -15,7 +12,7 @@ st.title("Trending News Summarizer & Fake News Detector")
 # Initialize session state for user authentication
 if 'user_authenticated' not in st.session_state:
     st.session_state.user_authenticated = False
-
+    
 # Function to fetch and summarize trending news
 def fetch_and_summarize_news():
     st.header("Trending News")
@@ -50,9 +47,28 @@ def display_and_add_comments(article_url):
         c_comments.execute("INSERT INTO comments (article_url, user, comment) VALUES (?, ?, ?)", (article_url, 'User123', user_comment))
         conn_comments.commit()
 
+# Function for user registration
+def user_registration():
+    st.header("User Registration")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Register"):
+        # Check if the username already exists
+        existing_user = c_users.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+        if existing_user:
+            st.error("Username already exists. Please choose a different one.")
+        else:
+            # Hash and salt the password
+            hashed_password = hash_password(password)
+            # Store user data in the database
+            c_users.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+            conn_users.commit()
+            st.success("Registration successful. You can now log in.")
+
 # Function for user login
 def user_login():
-    st.header("User Authentication")
+    st.header("User Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
@@ -60,7 +76,8 @@ def user_login():
         # Retrieve user data from the database based on the username
         user_data = c_users.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
         if user_data and check_password(password, user_data[1]):
-            st.session_state.user_authenticated = True
+            st.session_state.user_authenticated = True  # Store authentication state in session state
+
 
 # Function for email newsletter signup
 def email_signup():
@@ -128,8 +145,16 @@ def search_articles(keyword):
 # Main application
 if __name__ == "__main__":
     fetch_and_summarize_news()
+    
+    # User Registration Section
+    st.sidebar.title("User Registration")
+    user_registration()
+    
+    # User Login Section
+    st.sidebar.title("User Login")
     user_login()
-    email_signup()
+    
+    # Rest of the Application
     user_url = st.text_input("Enter a URL to check for fake news")
     if st.button("Check for Fake News"):
         detect_fake_news()
@@ -153,4 +178,4 @@ if __name__ == "__main__":
         # Search for articles by keyword
         search_articles(user_url)
     else:
-        st.warning("Please log in to leave comments or use the reading list, bookmarks, or search.")
+        st.warning("Please log in or register to leave comments or use the reading list, bookmarks, or search.")
