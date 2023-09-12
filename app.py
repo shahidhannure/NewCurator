@@ -55,10 +55,12 @@ def user_login():
     st.header("User Authentication")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+
     if st.button("Login"):
-        # Authenticate the user (you can replace this with your authentication logic)
-        if username == "user123" and password == "password123":
-            session_state.user_authenticated = True
+        # Retrieve user data from the database based on the username
+        user_data = c_users.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+        if user_data and check_password(password, user_data[1]):
+            st.session_state.user_authenticated = True
 
 # Function for email newsletter signup
 def email_signup():
@@ -131,7 +133,7 @@ if __name__ == "__main__":
     user_url = st.text_input("Enter a URL to check for fake news")
     if st.button("Check for Fake News"):
         detect_fake_news()
-    if session_state.user_authenticated:
+    if st.session_state.user_authenticated:  # Check authentication state using st.session_state
         display_and_add_comments(user_url)
         
         # Add to Reading List button
@@ -147,5 +149,8 @@ if __name__ == "__main__":
         
         # Display Bookmarks
         display_bookmarks("User123")
+        
+        # Search for articles by keyword
+        search_articles(user_url)
     else:
-        st.warning("Please log in to leave comments or use the reading list and bookmarks.")
+        st.warning("Please log in to leave comments or use the reading list, bookmarks, or search.")
