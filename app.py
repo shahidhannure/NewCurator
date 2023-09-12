@@ -17,7 +17,7 @@ if 'user_authenticated' not in st.session_state:
 # Function to fetch and summarize trending news
 def fetch_and_summarize_news():
     st.header("Trending News")
-    news_url = "https://example.com"  # Replace with your news source URL
+    news_url = "https://news.google.com/rss  # Replace with your news source URL
 
     # Fetch news data from the URL
     response = requests.get(news_url)
